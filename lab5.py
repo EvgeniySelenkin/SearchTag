@@ -15,13 +15,13 @@ class TagsSearch:
     self.cours = self.conn.cursor()
 
   def search(self, tags, n=1, m=5):
-    self.cours.execute(f"Select * from Docs WHERE to_tsvector(tags) @@ plainto_tsquery('{tags}') ORDER BY doc_id ASC LIMIT {n+m}")
+    self.cours.execute(f"Select * from Docs WHERE \"tags\" @@ plainto_tsquery('{tags}') ORDER BY doc_id ASC LIMIT {n+m}") # использовали индекс для полносвязного поиска
     result = self.cours.fetchall()
     return result[(n-1)*m:]
 
   def searchNot(self, tags, n=1, m=5):
     not_tags = tags.replace("tag", "nottag")
-    self.cours.execute(f"Select * from Docs WHERE to_tsvector(tags) @@ plainto_tsquery('{not_tags}') ORDER BY doc_id ASC LIMIT {n+m}")
+    self.cours.execute(f"Select * from Docs WHERE \"tags\" @@ plainto_tsquery('{not_tags}') ORDER BY doc_id ASC LIMIT {n+m}")
     result = self.cours.fetchall()
     return result[(n-1)*m:]
 
@@ -51,4 +51,6 @@ print(t.searchNot(tags='tag004', n=2, m=2))
 # ('Doc7', 'c://Doc7', 'tag001, tag002, nottag004, tag005, nottag002'),
 # ('Doc8', 'c://Doc8', 'tag001, tag002, nottag004, tag005, nottag002'),
 # ('Doc9', 'c://Doc9', 'tag001, tag002, nottag004, tag005, nottag002')
+
+# CREATE INDEX tag_idx ON Docs USING gin("tags")
 
